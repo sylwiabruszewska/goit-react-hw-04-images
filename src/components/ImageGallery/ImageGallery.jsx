@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useModal } from 'hooks/useModal';
 
 import styles from './ImageGallery.module.css';
 import PropTypes from 'prop-types';
@@ -8,13 +9,12 @@ import { getImages } from 'services/api';
 
 export const ImageGallery = ({ searchQuery }) => {
   const listRef = useRef();
+  const { selectedImage, isModalOpen, openModal, closeModal } = useModal();
 
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
 
   // pobieranie obrazków na nowe query
@@ -64,18 +64,6 @@ export const ImageGallery = ({ searchQuery }) => {
     setPage(page + 1);
   };
 
-  // otwieranie modala
-  const openModal = image => {
-    setSelectedImage(image);
-    setIsModalOpen(true);
-  };
-
-  // zamykanie modala
-  const closeModal = () => {
-    setSelectedImage(null);
-    setIsModalOpen(false);
-  };
-
   // efekt dla query i page
   useEffect(() => {
     if (searchQuery && page === 1) {
@@ -111,7 +99,7 @@ export const ImageGallery = ({ searchQuery }) => {
 
       {page < totalPages && <Button onClick={handleLoadMore}>Load more</Button>}
 
-      {selectedImage && isModalOpen && (
+      {isModalOpen && (
         <Modal
           largeImageURL={selectedImage.largeImageURL}
           tags={selectedImage.tags}
