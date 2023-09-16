@@ -25,7 +25,7 @@ export const ImageGallery = ({ searchQuery }) => {
     try {
       const response = await getImages(query, page);
       const data = response.data.hits;
-      const totalPages = Math.floor(response.data.total / 12);
+      const totalPages = Math.ceil(response.data.total / 12);
       setImages([...data]);
       setPage(1);
       setTotalPages(totalPages);
