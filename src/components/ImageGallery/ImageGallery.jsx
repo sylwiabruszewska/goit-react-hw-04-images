@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useModal } from 'hooks/useModal';
 
 import styles from './ImageGallery.module.css';
@@ -37,20 +37,23 @@ export const ImageGallery = ({ searchQuery }) => {
   };
 
   // pobieranie obrazków na nowe page
-  const loadMoreImages = async (query, page) => {
-    setIsLoading(true);
+  const loadMoreImages = useCallback(
+    async (query, page) => {
+      setIsLoading(true);
 
-    try {
-      const response = await getImages(query, page);
-      const data = response.data.hits;
-      setImages([...images, ...data]);
-      handleScroll();
-    } catch (error) {
-      console.log('error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const response = await getImages(query, page);
+        const data = response.data.hits;
+        setImages([...images, ...data]);
+        handleScroll();
+      } catch (error) {
+        console.log('error');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [images]
+  );
 
   // pozycja scroll
   const handleScroll = () => {
@@ -71,7 +74,7 @@ export const ImageGallery = ({ searchQuery }) => {
     } else if (searchQuery && page > 1) {
       loadMoreImages(searchQuery, page);
     }
-  }, [searchQuery, page]);
+  }, [searchQuery, page, loadMoreImages]);
 
   // efekt dla ładowania nowych obrazków
   useEffect(() => {
