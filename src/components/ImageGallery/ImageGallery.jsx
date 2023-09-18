@@ -1,15 +1,13 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useModal } from 'hooks/useModal';
+import { useState, useRef, useEffect } from 'react';
 
 import styles from './ImageGallery.module.css';
 import PropTypes from 'prop-types';
 
-import { Button, ImageGalleryItem, Loader, Modal } from '../index';
+import { Button, ImageGalleryItem, Loader } from '../index';
 import { getImages } from 'services/api';
 
-export const ImageGallery = ({ searchQuery }) => {
+export const ImageGallery = ({ searchQuery, onImageClick }) => {
   const listRef = useRef();
-  const { selectedImage, isModalOpen, openModal, closeModal } = useModal();
 
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
@@ -37,23 +35,20 @@ export const ImageGallery = ({ searchQuery }) => {
   };
 
   // pobieranie obrazków na nowe page
-  const loadMoreImages = useCallback(
-    async (query, page) => {
-      setIsLoading(true);
+  const loadMoreImages = async (query, page) => {
+    setIsLoading(true);
 
-      try {
-        const response = await getImages(query, page);
-        const data = response.data.hits;
-        setImages([...images, ...data]);
-        handleScroll();
-      } catch (error) {
-        console.log('error');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [images]
-  );
+    try {
+      const response = await getImages(query, page);
+      const data = response.data.hits;
+      setImages([...images, ...data]);
+      handleScroll();
+    } catch (error) {
+      console.log('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // pozycja scroll
   const handleScroll = () => {
@@ -71,10 +66,10 @@ export const ImageGallery = ({ searchQuery }) => {
   useEffect(() => {
     if (searchQuery && page === 1) {
       fetchImages(searchQuery, page);
-    } else if (searchQuery && page > 1) {
+    } else if (page > 1) {
       loadMoreImages(searchQuery, page);
     }
-  }, [searchQuery, page, loadMoreImages]);
+  }, [searchQuery, page]);
 
   // efekt dla ładowania nowych obrazków
   useEffect(() => {
@@ -93,7 +88,7 @@ export const ImageGallery = ({ searchQuery }) => {
           <ImageGalleryItem
             key={id}
             {...rest}
-            onClick={openModal}
+            onClick={onImageClick}
           ></ImageGalleryItem>
         ))}
       </ul>
@@ -101,14 +96,6 @@ export const ImageGallery = ({ searchQuery }) => {
       {isLoading && <Loader />}
 
       {page < totalPages && <Button onClick={handleLoadMore}>Load more</Button>}
-
-      {isModalOpen && (
-        <Modal
-          largeImageURL={selectedImage.largeImageURL}
-          tags={selectedImage.tags}
-          onClick={closeModal}
-        />
-      )}
     </div>
   );
 };
