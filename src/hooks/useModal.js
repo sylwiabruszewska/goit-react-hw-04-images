@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const useModal = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -13,6 +13,20 @@ export const useModal = () => {
     setSelectedImage(null);
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.key === 'Escape' && isModalOpen) {
+        closeModal();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isModalOpen]);
 
   return { selectedImage, isModalOpen, openModal, closeModal };
 };
