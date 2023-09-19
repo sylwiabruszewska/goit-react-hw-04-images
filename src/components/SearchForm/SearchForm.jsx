@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 export const SearchForm = ({ onSubmit }) => {
   const handleSubmit = event => {
     event.preventDefault();
-    const query = event.target.elements.search.value;
+    let query = event.target.elements.search.value;
     onSubmit(query);
+    event.target.elements.search.value = '';
   };
 
   return (
