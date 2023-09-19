@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 import styles from './ImageGallery.module.css';
 import PropTypes from 'prop-types';
@@ -15,40 +15,34 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  // pobieranie obrazków na nowe query
-  const fetchImages = async (query, page) => {
+  // pobieranie obrazków
+  const fetchImages = useCallback(async () => {
+    if (!searchQuery) {
+      return;
+    }
+
     setIsLoading(true);
-    setScrollPosition(0);
 
     try {
-      const response = await getImages(query, page);
+      const response = await getImages(searchQuery, page);
       const data = response.data.hits;
       const totalPages = Math.ceil(response.data.total / 12);
-      setImages([...data]);
-      setPage(1);
-      setTotalPages(totalPages);
+      if (page === 1) {
+        // pobieranie obrazków na nowe query
+        setImages([...data]);
+        setTotalPages(totalPages);
+        setScrollPosition(0);
+      } else {
+        // pobieranie obrazków na nowe page
+        setImages(images => [...images, ...data]);
+        handleScroll();
+      }
     } catch (error) {
       console.log('error');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // pobieranie obrazków na nowe page
-  const loadMoreImages = async (query, page) => {
-    setIsLoading(true);
-
-    try {
-      const response = await getImages(query, page);
-      const data = response.data.hits;
-      setImages([...images, ...data]);
-      handleScroll();
-    } catch (error) {
-      console.log('error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [searchQuery, page]);
 
   // pozycja scroll
   const handleScroll = () => {
@@ -62,14 +56,17 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
     setPage(page + 1);
   };
 
+  // ustawienie page = 1 przy zmianie query
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
+
   // efekt dla query i page
   useEffect(() => {
-    if (searchQuery && page === 1) {
-      fetchImages(searchQuery, page);
-    } else if (page > 1) {
-      loadMoreImages(searchQuery, page);
+    if (searchQuery) {
+      fetchImages();
     }
-  }, [searchQuery, page]);
+  }, [fetchImages, page, searchQuery]);
 
   // efekt dla ładowania nowych obrazków
   useEffect(() => {
@@ -102,4 +99,5 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
 
 ImageGallery.propTypes = {
   searchQuery: PropTypes.string.isRequired,
+  onImageClick: PropTypes.func.isRequired,
 };
