@@ -14,6 +14,7 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [noResults, setNoResults] = useState('');
 
   // pobieranie obrazków
   const fetchImages = useCallback(async () => {
@@ -28,10 +29,14 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
       const data = response.data.hits;
       const totalPages = Math.ceil(response.data.total / 12);
       if (page === 1) {
-        // pobieranie obrazków na nowe query
-        setImages([...data]);
-        setTotalPages(totalPages);
-        setScrollPosition(0);
+        if (data.length === 0) {
+          setNoResults(true);
+        } else {
+          setImages([...data]);
+          setNoResults(false);
+          setTotalPages(totalPages);
+          setScrollPosition(0);
+        }
       } else {
         // pobieranie obrazków na nowe page
         setImages(images => [...images, ...data]);
@@ -91,6 +96,13 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
       </ul>
 
       {isLoading && <Loader />}
+
+      {noResults && (
+        <p className={styles.message}>
+          Sorry, there are no images matching your search query. Please try
+          again.
+        </p>
+      )}
 
       {page < totalPages && <Button onClick={handleLoadMore}>Load more</Button>}
     </div>
