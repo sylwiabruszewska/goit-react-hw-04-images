@@ -30,6 +30,7 @@ export const ImageGallery = ({ searchQuery, onImageClick }) => {
       const totalPages = Math.ceil(response.data.total / 12);
       if (page === 1) {
         if (data.length === 0) {
+          setImages([]);
           setNoResults(true);
         } else {
           setImages([...data]);
